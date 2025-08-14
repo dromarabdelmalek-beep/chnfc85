@@ -3,18 +3,18 @@
  * Author             : WCH
  * Version            : V1.0
  * Date               : 2025/01/21
- * Description        : NFC PICC type2 Tag²âÊÔÀı³Ì
+ * Description        : NFC PICC type2 Tagæµ‹è¯•ä¾‹ç¨‹
  * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 
 /******************************************************************************/
-/* Í·ÎÄ¼ş°üº¬ */
+/* å¤´æ–‡ä»¶åŒ…å« */
 #include "CH58x_common.h"
 #include "wch_nfca_picc_bsp.h"
 #include "wch_nfca_picc_t2t.h"
 
-/* Ã¿¸öÎÄ¼şµ¥¶Àdebug´òÓ¡µÄ¿ª¹Ø£¬ÖÃ0¿ÉÒÔ½ûÖ¹±¾ÎÄ¼şÄÚ²¿´òÓ¡ */
+/* æ¯ä¸ªæ–‡ä»¶å•ç‹¬debugæ‰“å°çš„å¼€å…³ï¼Œç½®0å¯ä»¥ç¦æ­¢æœ¬æ–‡ä»¶å†…éƒ¨æ‰“å° */
 #define DEBUG_PRINT_IN_THIS_FILE 1
 #if DEBUG_PRINT_IN_THIS_FILE
     #define PRINTF(...) PRINT(__VA_ARGS__)
@@ -29,7 +29,7 @@
 /*********************************************************************
  * @fn      main
  *
- * @brief   Ö÷º¯Êı
+ * @brief   ä¸»å‡½æ•°
  *
  * @return  none
  */
@@ -38,8 +38,8 @@ int main(void)
     UINT16 x;
 //    uint8_t uid[7] = {0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde};
 //    uint8_t uid[7] = {0x04, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};  /* nxp */
-//    uint8_t uid[7] = {0x1D, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};  /* ¸´µ©Î¢ */
-    uint8_t uid[7] = {0x00, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};    /* Î´Öª³§ÉÌ */
+//    uint8_t uid[7] = {0x1D, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};  /* å¤æ—¦å¾® */
+    uint8_t uid[7] = {0x00, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};    /* æœªçŸ¥å‚å•† */
 
     HSECFG_Capacitance(HSECap_18p);
     SetSysClock(CLK_SOURCE_HSE_PLL_78MHz);

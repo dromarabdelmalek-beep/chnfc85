@@ -161,7 +161,6 @@ void touch_ScanWakeUp(void)
     wakeupflag = 1;           //置成唤醒状态
 
     dg_log("wake up for a while\n");
-    TKY_SaveAndStop();    //---对相关寄存器进行保存---
     for (uint8_t i=0; i< TKY_MAX_QUEUE_NUM ;i++ ) {
         touch_GPIOModeCfg (GPIO_ModeOut_PP_5mA,my_tky_ch_init[i].channelNum); //---推挽接地放电---
     }
@@ -176,7 +175,6 @@ void touch_ScanWakeUp(void)
  */
 void touch_ScanEnterSleep(void)
 {
-    TKY_SaveAndStop();    //---对相关寄存器进行保存---
     for (uint8_t i=0; i< TKY_MAX_QUEUE_NUM ;i++ ) {
         touch_GPIOModeCfg (GPIO_ModeOut_PP_5mA,my_tky_ch_init[i].channelNum); //---推挽接地放电---
     }

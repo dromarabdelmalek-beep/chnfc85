@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : CH58x_NFCA_LIB.h
  * Author             : WCH
- * Version            : V1.2
- * Date               : 2025/01/21
+ * Version            : V1.3
+ * Date               : 2025/05/27
  * Description        : CH585/4 NFC-A头文件
  *********************************************************************************
  * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
@@ -93,9 +93,9 @@ typedef struct _nfca_pcd_config_struct
  *
  * @param           cfg - 配置参数指针
  *
- * @return          None.
+ * @return          0 if success, others error.
  */
-extern void nfca_pcd_lib_init(nfca_pcd_config_t *cfg);
+extern uint8_t nfca_pcd_lib_init(nfca_pcd_config_t *cfg);
 
 /*******************************************************************************
  * @fn              nfca_pcd_lib_start
@@ -325,9 +325,9 @@ typedef __attribute__((aligned(4))) struct _nfca_picc_callback_struct
  *
  * @param           cfg - 配置参数指针
  *
- * @return          None.
+ * @return          0 if success, others error.
  */
-extern void nfca_picc_lib_init(nfca_picc_config_t *cfg);
+extern uint8_t nfca_picc_lib_init(nfca_picc_config_t *cfg);
 
 /*******************************************************************************
  * @fn              nfca_picc_lib_start
@@ -388,6 +388,28 @@ extern uint16_t nfca_picc_tx_prepare_raw_buf(uint8_t *out, uint8_t *in, uint8_t 
  * @return          None.
  */
 extern void nfca_picc_tx_set_raw_buf(uint8_t *data, uint16_t length);
+
+/*******************************************************************************
+ * @fn              nfca_picc_enable_rsp_rs
+ *
+ * @brief           nfc-a picc 使能回复信号的负载电阻
+ *
+ * @param           None.
+ *
+ * @return          None.
+ */
+extern void nfca_picc_enable_rsp_rs(void);
+
+/*******************************************************************************
+ * @fn              nfca_picc_disable_rsp_rs
+ *
+ * @brief           nfc-a picc 禁用回复信号的负载电阻
+ *
+ * @param           None.
+ *
+ * @return          None.
+ */
+extern void nfca_picc_disable_rsp_rs(void);
 
 /*******************************************************************************
  * @fn              nfca_picc_rx_irq_handler
@@ -529,6 +551,123 @@ extern void nfca_crypto1_encrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t 
  *              otherwise - failed.
  */
 extern uint8_t nfca_crypto1_decrypt(nfca_crypto1_cipher_t *crypto1_cipher, uint8_t *in, uint8_t *out, uint8_t *in_parity, uint8_t len);
+
+/********************************** CH58x NFC-A SOFT PCD ***************************************/
+
+typedef struct _nfca_soft_pcd_config_struct
+{
+    nfca_pcd_end_cb_t pcd_end_cb;
+    uint32_t *data_buf;
+    uint8_t *send_buf;
+    uint8_t *recv_buf;
+    uint8_t *parity_buf;
+
+    uint16_t data_buf_size;
+    uint16_t send_buf_size;
+    uint16_t recv_buf_size;
+    uint16_t parity_buf_size;
+} nfca_soft_pcd_config_t;
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_lib_init
+ *
+ * @brief           nfc-a soft pcd 初始化
+ *
+ * @param           cfg - 配置参数指针
+ *
+ * @return          0 if success, others error.
+ */
+extern uint8_t nfca_soft_pcd_lib_init(nfca_soft_pcd_config_t *cfg);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_communicate
+ *
+ * @brief           nfc-a软件解码开始通讯，传输数据
+ *
+ * @param           data_bits_num - uint16_t，需要发送的数据区bit数量
+ * @param           mode - NFCA_PCD_REC_MODE_Def，发送结束后的接收模式
+ * @param           offset - uint8_t(0 - 7)，需要发送的第一个位在首字节中的偏移数量
+ *
+ * @return          0 if success, others failed.
+ */
+extern uint8_t nfca_soft_pcd_communicate(uint16_t data_bits_num, NFCA_PCD_REC_MODE_Def mode, uint8_t offset);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_get_communicate_status
+ *
+ * @brief           nfc-a获取当前通讯状态
+ *
+ * @param           None.
+ *
+ * @return          nfca_pcd_controller_state_t，获取当前通讯状态.
+ */
+extern nfca_pcd_controller_state_t nfca_soft_pcd_get_communicate_status(void);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_get_recv_data_len
+ *
+ * @brief           获取本次解码出的数据长度
+ *
+ * @param           None
+ *
+ * @return          uint16_t - 数据长度.
+ */
+extern uint16_t nfca_soft_pcd_get_recv_data_len(void);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_get_recv_bits
+ *
+ * @brief           获取本次接收到的bit数量
+ *
+ * @param           None
+ *
+ * @return          uint16_t - 接收到的bit数量.
+ */
+extern uint16_t nfca_soft_pcd_get_recv_bits(void);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_set_wait_ms
+ *
+ * @brief           NFC设置接收超时时间
+ *
+ * @param           us - uint16_t，超时时间，单位ms，最大38ms。
+ *
+ * @return          None.
+ */
+extern void nfca_soft_pcd_set_wait_ms(uint8_t ms);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_set_wait_us
+ *
+ * @brief           NFC设置接收超时时间
+ *
+ * @param           us - uint16_t，超时时间，单位us，最大38000us。
+ *
+ * @return          None.
+ */
+extern void nfca_soft_pcd_set_wait_us(uint16_t us);
+
+/*******************************************************************************
+ * @fn              NFCSoftPCD_IRQLibHandler
+ *
+ * @brief           NFCA SOFT PCD 发送中断处理函数
+ *
+ * @param           None
+ *
+ * @return          None.
+ */
+extern void NFCSoftPCD_IRQLibHandler(void);
+
+/*******************************************************************************
+ * @fn              nfca_soft_pcd_rx_irq_handler
+ *
+ * @brief           NFCA SOFT PCD 接收中断处理函数，在TMR0中断中调用
+ *
+ * @param           None
+ *
+ * @return          None.
+ */
+extern void nfca_soft_pcd_rx_irq_handler(void);
 
 #ifdef __cplusplus
 }

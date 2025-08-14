@@ -68,4 +68,6 @@ extern nfca_picc_m1_data_t g_nfca_picc_m1_data;
 
 extern void nfca_picc_m1_enable(uint8_t *uid);
 
+extern void nfca_picc_m1_change_uid(uint8_t *uid);
+
 #endif  /* _WCH_NFCA_PICC_M1_H_ */

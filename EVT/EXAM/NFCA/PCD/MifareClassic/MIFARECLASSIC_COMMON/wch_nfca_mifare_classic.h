@@ -189,4 +189,4 @@ extern uint16_t PcdReadValueBlock(uint8_t addr);
 */
 extern void PcdHalt(void);
 
-#endif /* _NFC_READER_M1_H_ */
+#endif /* _WCH_NFCA_MIFARE_CLASSIC_H_ */

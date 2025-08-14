@@ -78,7 +78,7 @@ void nfca_pcd_test(void)
     uint16_t adc_vdd;
     int vdd_value;
 
-    /* 下面代码位电压检测并根据电压设置输出档位，非必要代码，演示使用。 */
+#if 1   /* 这段代码为电压检测并根据电压设置输出档位，非必要代码，可以置0屏蔽或者直接删除。 */
     adc_vdd = sys_get_vdd();
     vdd_value = ADC_VoltConverSignalPGA_MINUS_12dB(adc_vdd);
     PRINTF("vdd_value: %d\n", vdd_value);
@@ -102,12 +102,13 @@ void nfca_pcd_test(void)
         nfca_pcd_set_out_drv(NFCA_PCD_DRV_CTRL_LEVEL3);
         PRINTF("LV3\n");
     }
+#endif
 
     while(1)
     {
         nfca_pcd_start();
 
-#if 1   /* 置1先进行超低功耗检卡，对天线信号幅度影响小的设备可能会无法唤醒 */
+#if 1   /* 置1先进行超低功耗检卡，对天线信号幅度影响小的设备可能会无法唤醒，检测距离会比通讯距离更近。 */
         if(nfca_pcd_lpcd_check() == 0)
         {
             PRINTF("NO CARD\n");

@@ -35,22 +35,27 @@ uint32_t g_nfca_pcd_recv_bits;
 /* 根据NFC_CTR电路连接来更改下面的引脚配置 */
 void nfca_pcd_ctr_init(void)
 {
-    GPIOA_ModeCfg(GPIO_Pin_7, GPIO_ModeOut_PP_5mA);
-    GPIOA_ResetBits(GPIO_Pin_7);
+    R32_PA_PU &= ~(GPIO_Pin_7);     /* 取消上拉 */
+    R32_PA_PD_DRV |= GPIO_Pin_7;    /* 打开下拉 */
+    R32_PA_DIR |= (GPIO_Pin_7);     /* 默认输出方向 */
+    R32_PA_CLR = GPIO_Pin_7;        /* 只会输出低，不可输出高 */
+
     nfca_pcd_set_lp_ctrl(NFCA_PCD_LP_CTRL_0_5_VDD);
 }
 
 __always_inline static inline void nfca_pcd_ctr_on(void)
 {
     /* 输出使能，输出低，不可输出高，天线峰峰值分压3分之一 */
+    R32_PA_CLR = GPIO_Pin_7;
     R32_PA_DIR |= (GPIO_Pin_7);
 }
 
 __always_inline static inline void nfca_pcd_ctr_off(void)
 {
-    /* 输出禁止，模拟输入，天线峰峰值几乎不分压 */
+    /* 输出禁止，下拉输入，天线峰峰值几乎不分压 */
     R32_PA_DIR &= ~(GPIO_Pin_7);
 }
+
 
 void nfca_pcd_ctr_handle(void)
 {
@@ -80,6 +85,7 @@ void nfca_pcd_ctr_handle(void)
 void nfca_pcd_init(void)
 {
     nfca_pcd_config_t cfg;
+    uint8_t res;
 
     /* NFC引脚初始化为模拟输入模式 */
     GPIOB_ModeCfg(GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_16 | GPIO_Pin_17, GPIO_ModeIN_Floating);
@@ -108,8 +114,12 @@ void nfca_pcd_init(void)
     cfg.parity_buf_size = NFCA_PCD_MAX_PARITY_NUM;
 
     /* 将数据区指针传入给NFC库内BUFFER指针 */
-    nfca_pcd_lib_init(&cfg);
-
+    res = nfca_pcd_lib_init(&cfg);
+    if(res)
+    {
+        PRINT("nfca pcd lib init error\n");
+        while(1);
+    }
 #if NFCA_PCD_USE_NFC_CTR_PIN
     nfca_pcd_ctr_init();
 #endif
@@ -247,8 +257,15 @@ uint16_t nfca_adc_get_ant_signal(void)
 
     adc_data = adc_data_all / 2;
 
+    if(channel == CH_INTE_NFC)
+    {
+        R8_ADC_CHANNEL = CH_INTE_VBAT;  /* 除了NFC使用时，其他时候不应该将通道连接到NFC */
+    }
+    else
+    {
+        R8_ADC_CHANNEL = channel;
+    }
     R8_TEM_SENSOR = sensor;
-    R8_ADC_CHANNEL = channel;
     R8_ADC_CFG = config;
     R8_TKEY_CFG = tkey_cfg;
     return (adc_data);
@@ -276,7 +293,12 @@ void nfca_pcd_lpcd_calibration(void)
     adc_min = 0xffff;
 
     nfca_pcd_start();
+
+#if NFCA_PCD_USE_NFC_CTR_PIN
+    mDelayuS(2000);     /* CH585M-R1-1V1电路R15在NC的情况下，内部信号建立需要2000us才趋于稳定。可以在R15处焊接一个10K电阻加速初始化时的信号稳定。 */
+#else
     mDelayuS(200);      /* 内部信号建立需要200us才趋于稳定 */
+#endif
 
     tkey_cfg = R8_TKEY_CFG;
     sensor = R8_TEM_SENSOR;
@@ -289,7 +311,7 @@ void nfca_pcd_lpcd_calibration(void)
     R8_ADC_CFG = RB_ADC_POWER_ON | RB_ADC_BUF_EN | (SampleFreq_8_or_4 << 6) | (ADC_PGA_1_4 << 4);   /* -12DB采样 ADC_PGA_1_4*/
     R8_ADC_CONVERT &= ~RB_ADC_PGA_GAIN2;
     R8_ADC_CONVERT &= ~(3 << 4);  /* 4个Tadc */
-
+    mDelayuS(100);
     for(i = 0; i < 10; i++)
     {
         R8_ADC_CONVERT |= RB_ADC_START;
@@ -309,7 +331,14 @@ void nfca_pcd_lpcd_calibration(void)
 
     /* adc配置恢复 */
     R8_TEM_SENSOR = sensor;
-    R8_ADC_CHANNEL = channel;
+    if(channel == CH_INTE_NFC)
+    {
+        R8_ADC_CHANNEL = CH_INTE_VBAT;  /* 除了NFC使用时，其他时候不应该将通道连接到NFC */
+    }
+    else
+    {
+        R8_ADC_CHANNEL = channel;
+    }
     R8_ADC_CFG = config;
     R8_TKEY_CFG = tkey_cfg;
 
@@ -435,7 +464,7 @@ uint8_t nfca_pcd_lpcd_check(void)
  *
  * @param           None.
  *
- * @return          1 有卡，0无卡.
+ * @return          None.
  */
 __attribute__((interrupt("WCH-Interrupt-fast")))
 __attribute__((section(".highcode")))

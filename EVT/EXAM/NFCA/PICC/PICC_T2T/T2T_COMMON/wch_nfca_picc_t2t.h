@@ -13,7 +13,7 @@
 #include "wch_nfca_picc_bsp.h"
 #include "ISO14443-3A.h"
 
-#define WCH_NFCA_PICC_T2T_PAGES_NUM             135     /* T2T“≥√Ê ˝¡ø≈‰÷√ */
+#define WCH_NFCA_PICC_T2T_PAGES_NUM             135     /* T2TÈ°µÈù¢Êï∞ÈáèÈÖçÁΩÆ */
 
 #if (WCH_NFCA_PICC_T2T_PAGES_NUM < 48) || (WCH_NFCA_PICC_T2T_PAGES_NUM > 255)
 #error "WCH_NFCA_PICC_T2T_PAGES_NUM MUST BIGGER THAN 48 AND SMALL THAN 256."

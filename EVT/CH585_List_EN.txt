@@ -1,5 +1,5 @@
 
-Nanjing Qinheng Microelectronics Co., Ltd. 2025.03
+Nanjing Qinheng Microelectronics Co., Ltd. 2025.05
 
 http://wch-ic.com
 
@@ -27,6 +27,9 @@ Directory
   |      |      |      |      |-- PCD: 
   |      |      |      |      |      |-- PCD_COMMON: NFC-A PCD Reader Universal Code File
   |      |      |      |      |      |-- MifareClassic: MifareClassic Card Operation Example Project
+  |      |      |      |      |-- PCD_SOFT:
+  |      |      |      |      |      |-- PCD_SOFT_COMMON: NFC-A PCD Software Decoding Reader Universal Code File
+  |      |      |      |      |      |-- SoftPCDMifareClassic: PCD Software-Decoding Reader Example Project for Mifare Classic Cards
   |      |      |      |      |-- PICC: 
   |      |      |      |      |      |-- PICC_COMMON: NFC Card Mode Universal Code File
   |      |      |      |      |      |-- PICC_M1: NFC card mode simulation M1 card example project
@@ -89,6 +92,7 @@ Directory
   |      |      |      |      |-- Central: central routine, actively scan surrounding devices, conect to the specified peripheral address, search custom service and characteristic, execute read/write commands, peripheral routine is needed, and modify the peripheral address to the routine target address, (84:C2:E4:03:02:02) by default
   |      |      |      |      |-- HeartRate: heart rate routine, upload heart rate regularly after connected to the central
   |      |      |      |      |-- Peripheral: peripheral role routine, custom including five services with different  attributes, including read attribute, write attribute, notify attribute, read/write attribute, and safe and readable attribute
+  |      |      |      |      |-- peripheral_ancs_client: peripheral role routine, including Apple Notification Center Service
   |      |      |      |      |-- RunningSensor: running sensor routine,upload rate regularly after connected to the central 
   |      |      |      |      |-- HID_Keyboard: BLE keyboard routine, simulate a keyboard device, upload key value regularly after connected to the central
   |      |      |      |      |-- HID_Mouse: BLE mouse routine, simulate a mouse device, upload key value regularly after connected to the central
@@ -101,6 +105,7 @@ Directory
   |      |      |      |      |-- RF_Basic: basic mode transmission and reception routine by 2.4G library 
   |      |      |      |      |-- RF_PHY: non-standard wireless transceiver routines
   |      |      |      |      |-- RF_PHY_Hop: non-standard wireless frequency hopping transceiver routine
+  |      |      |      |      |-- IoCHub-Net: BLE+IoChub Simple Light Control Switch Routine, including IoCHubNetApp_Sndroid Application Routine Compressed Package
   |      |      |      |      |-- MESH
   |      |      |      |      |      |-- adv_ali_light: Tmall Genie light routine, devices can be found and provisioned network via Tmall Genie, to control the switch state. By default, only switch attribute can be controlled. If other attributes (brightness, power, temperature, etc.) are needed, add the corresponding processing function and status report function according to the attribute description of the Alibaba Cloud product configuration.
   |      |      |      |      |      |-- adv_ali_light_add_lightness: MESH general attribute adding routine. On the basis of the Tmall Genie light routine, the brightness attribute is added, which is used to compare the original Tmall Genie light routine to quickly become familiar with the method of adding other MESH general attributes.
@@ -130,6 +135,8 @@ Directory
   |      |      |      |      |-- PAwR_RSP: Periodic advertising with response, response side routine
   |      |      |      |      |-- BLE_UART: BLE and UART transparent transmission routine, for detailed instructions, please refer to the <description.txt> document in the root directory
   |      |      |      |      |-- BLE_USB: Bluetooth with USB routine, USB emulation 340 device forwards bluetooth data 
+  |      |      |      |      |-- SpeedTest_Peripheral: Bluetooth speed measurement slave routine
+  |      |      |      |      |-- SpeedTest_Central: Bluetooth speed measurement host routine
   |      |      |      |      |-- SYNC_ADV: cycle synchronization advertising routine
   |      |      |      |      |-- SYNC_SCAN: cycle synchronization scanning routine
   |      |      |      |      |-- HAL: Hardware-related files shared by routines

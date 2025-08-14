@@ -323,7 +323,7 @@ void RFRole_Init(void)
         // 配置重传间隔，发送次数大于1时有效
         gParm.sendInterval = 1999*2;
         // 配置发送稳定时间
-        gParm.sendTime = 10*2;
+        gParm.sendTime = 20*2;
         RFRole_SetParam( &gParm );
     }
     // TX相关参数，全局变量

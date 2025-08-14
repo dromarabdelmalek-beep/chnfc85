@@ -75,6 +75,9 @@ void USB_TestMode_Deal( void )
     /* start test */
     USBHS_Test_Flag &= ~0x80;
 
+    // 高速dongle等短线材(<3米)的应用也需调整
+    (*((PUINT32V)0x40009204)) &= ~0x000000c3;//调整信号幅值和斜率
+
     if( USBHS_SetupReqIndex == 0x0100 )
     {
         /* Test_J */

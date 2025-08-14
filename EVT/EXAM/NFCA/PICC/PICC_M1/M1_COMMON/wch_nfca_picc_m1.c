@@ -1,16 +1,16 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : wch_nfca_picc_m1.c
  * Author             : WCH
- * Version            : V1.2
- * Date               : 2025/01/21
+ * Version            : V1.3
+ * Date               : 2025/04/29
  * Description        : NFC PICC M1 head file for WCH chips.
  * Copyright (c) 2025 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
  *******************************************************************************/
 #include "wch_nfca_picc_m1.h"
 
-/* Ã¿¸öÎÄ¼şµ¥¶Àdebug´òÓ¡µÄ¿ª¹Ø£¬ÖÃ0¿ÉÒÔ½ûÖ¹±¾ÎÄ¼şÄÚ²¿´òÓ¡ */
-#define DEBUG_PRINT_IN_THIS_FILE 0
+/* æ¯ä¸ªæ–‡ä»¶å•ç‹¬debugæ‰“å°çš„å¼€å…³ï¼Œç½®0å¯ä»¥ç¦æ­¢æœ¬æ–‡ä»¶å†…éƒ¨æ‰“å° */
+#define DEBUG_PRINT_IN_THIS_FILE    0
 #if DEBUG_PRINT_IN_THIS_FILE
     #define PRINTF(...) PRINT(__VA_ARGS__)
 #else
@@ -18,7 +18,7 @@
 #endif
 
 /*
- * Mifare Classic¿¨Æ¬ÃüÁî×Ö
+ * Mifare Classicå¡ç‰‡å‘½ä»¤å­—
 */
 #define PICC_REQIDL                 0x26           
 #define PICC_REQALL                 0x52           
@@ -119,13 +119,13 @@ static const uint8_t abTrailerAccessConditions[8][2] = {
     },
 };
 
-/* »Øµ÷º¯Êı»áÔÚÖĞ¶ÏÀïµ÷ÓÃ£¬ËùÒÔĞèÒª×¢ÒâºÍÍâ²¿³ÌĞòµÄÏß³Ì°²È«´úÂë´¦Àí*/
+/* å›è°ƒå‡½æ•°ä¼šåœ¨ä¸­æ–­é‡Œè°ƒç”¨ï¼Œæ‰€ä»¥éœ€è¦æ³¨æ„å’Œå¤–éƒ¨ç¨‹åºçš„çº¿ç¨‹å®‰å…¨ä»£ç å¤„ç†*/
 static nfca_picc_cb_t gs_nfca_picc_cb_m1 =
 {
     .online = nfca_picc_m1_online,
     .data_handler = nfca_picc_m1_data_handler,
     .offline = nfca_picc_m1_offline,
-};   /* M1¿¨Êı¾İ´¦Àí»Øµ÷ */
+};   /* M1å¡æ•°æ®å¤„ç†å›è°ƒ */
 
 __attribute__((always_inline)) RV_STATIC_INLINE uint8_t get_access_condition(uint8_t block)
 {
@@ -431,7 +431,7 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             uint16_t sector_num;
             uint8_t *key_use;
 
-            sector_num = ((g_picc_data_buf[1] >> 2) & 0x0f) ;
+            sector_num = ((g_picc_data_buf[1] >> 2) & 0x0f);    /* M1å¡æœ‰16ä¸ªæ‰‡åŒºï¼Œåœ°å€ä¸º0-15 */
             g_nfca_picc_m1_data.authed_sector = sector_num;
 
             g_nfca_picc_m1_data.key_a_or_b = g_picc_data_buf[0] & 1;
@@ -460,7 +460,7 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
         }
         else if(g_picc_data_buf[0] == PICC_WRITE)
         {
-            g_nfca_picc_m1_data.block_in_use = g_picc_data_buf[1] & 0x0f;
+            g_nfca_picc_m1_data.block_in_use = g_picc_data_buf[1] & 0x3f;   /* M1å¡æœ‰64ä¸ªå—ï¼Œåœ°å€ä¸º0-63 */
             g_nfca_picc_m1_data.state = NFCA_PICC_M1_STATE_WRITING;
             g_picc_data_buf[0] = ACK_VALUE;
             send_bits = ACK_NAK_FRAME_SIZE;
@@ -524,7 +524,7 @@ static uint16_t nfca_picc_m1_data_handler(uint16_t bits_num)
             }
             if (ISO14443_CRCA(g_picc_data_buf, 18) == 0)
             {
-                /* Ğ´Èë³É¹¦£¬ÕâÀïÓ¦¼ÓÉÏÓÃ»§×Ô¼ºµÄĞ´Èë»Øµ÷£¬Èç¹û²»¸øĞ´ÈëµÚ0¿é£¬Ôö¼ÓÅĞ¶Ï¼´¿É */
+                /* å†™å…¥æˆåŠŸï¼Œè¿™é‡Œåº”åŠ ä¸Šç”¨æˆ·è‡ªå·±çš„å†™å…¥å›è°ƒï¼Œå¦‚æœä¸ç»™å†™å…¥ç¬¬0å—ï¼Œå¢åŠ åˆ¤æ–­å³å¯ */
                 if(g_nfca_picc_m1_data.block_in_use != 0)
                 {
                     __MCPY((void *)&g_nfca_picc_m1_data.blocks[g_nfca_picc_m1_data.block_in_use], (void *)g_picc_data_buf, (void *)(g_picc_data_buf + 16));
@@ -588,7 +588,7 @@ void nfca_picc_m1_enable(uint8_t *uid)
     g_nfca_picc_m1_data.manufacturer_data.atqa[0] = 0x04;
     g_nfca_picc_m1_data.manufacturer_data.atqa[1] = 0;
 
-    /* Ä¬ÈÏµÄÊı¾İ */
+    /* é»˜è®¤çš„æ•°æ® */
     __MCPY((void *)g_nfca_picc_m1_data.blocks[1], (void *)block_data1, (void *)((uint32_t)block_data1 + 16));
     __MCPY((void *)g_nfca_picc_m1_data.blocks[2], (void *)block_data1, (void *)((uint32_t)block_data1 + 16));
     __MCPY((void *)g_nfca_picc_m1_data.blocks[3], (void *)sector_trailer, (void *)((uint32_t)sector_trailer + 16));
@@ -609,5 +609,22 @@ void nfca_picc_m1_enable(uint8_t *uid)
     ISO14443AAppendCRCA((void *)data, 1);
     ISO14443ACalOddParityBit(data, parity, (ISO14443A_SAK_FRAME_SIZE / 8));
     sak_pre_len = nfca_picc_tx_prepare_raw_buf(iso14443a_sak_pre_raw_data, data, parity, ISO14443A_SAK_FRAME_SIZE, 0);
+#endif
+}
+
+void nfca_picc_m1_change_uid(uint8_t *uid)
+{
+    uint8_t data[3];
+    uint8_t parity[(ISO14443A_CL_UID_SIZE + ISO14443A_CL_BCC_SIZE)];
+
+    g_nfca_picc_m1_data.manufacturer_data.uid[0] = uid[0];
+    g_nfca_picc_m1_data.manufacturer_data.uid[1] = uid[1];
+    g_nfca_picc_m1_data.manufacturer_data.uid[2] = uid[2];
+    g_nfca_picc_m1_data.manufacturer_data.uid[3] = uid[3];
+    g_nfca_picc_m1_data.manufacturer_data.bcc = ISO14443A_CALC_BCC(g_nfca_picc_m1_data.manufacturer_data.uid);
+
+#if IS014443A_FAST_CL
+    ISO14443ACalOddParityBit(g_nfca_picc_m1_data.manufacturer_data.uid, parity, (ISO14443A_CL_UID_SIZE + ISO14443A_CL_BCC_SIZE));
+    cl_pre_len = nfca_picc_tx_prepare_raw_buf(iso14443a_cl_pre_raw_data, g_nfca_picc_m1_data.manufacturer_data.uid, parity, ISO14443A_CL_FRAME_SIZE, 0);
 #endif
 }

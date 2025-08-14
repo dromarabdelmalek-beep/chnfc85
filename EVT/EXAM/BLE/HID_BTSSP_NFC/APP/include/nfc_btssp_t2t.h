@@ -1,8 +1,8 @@
 /********************************** (C) COPYRIGHT *******************************
  * File Name          : nfc_btssp_t2t.h
  * Author             : WCH
- * Version            : V1.0
- * Date               : 2024/12/18
+ * Version            : V1.1
+ * Date               : 2025/05/27
  * Description        : NFC PICC BTSSP T2T header file for WCH chips.
  * Copyright (c) 2024 Nanjing Qinheng Microelectronics Co., Ltd.
  * SPDX-License-Identifier: Apache-2.0
@@ -44,6 +44,11 @@ typedef struct _nfc_btssp_t2t_init_struct
 extern NFC_BTSSP_T2T_INIT_ERR_t nfc_btssp_t2t_init(nfc_btssp_t2t_init_t *cfg);
 
 extern NFC_BTSSP_T2T_INIT_ERR_t nfc_bt_t2t_init(nfc_btssp_t2t_init_t *cfg);
+
+extern uint8_t nfc_btssp_t2t_sleep_flag;
+
+#define NFC_BTSSP_T2T_SLEEP_CHECK_EVT   1
+#define NFC_BTSSP_T2T_START_CHECK_EVT   2
 
 #ifdef __cplusplus
 }

@@ -49,14 +49,13 @@
     <link>
       <name>PCD_COMMON</name>
       <type>2</type>
-      <location>PARENT-1-PROJECT_LOC/PCD_COMMON</location>
+      <locationURI>PARENT-1-PROJECT_LOC/PCD_COMMON</locationURI>
     </link>
   </linkedResources>
   <filteredResources>
     <filter>
-      <id>1724381046512</id>
       <name/>
-      <type>22</type>
+      <type>6</type>
       <matcher>
         <id>org.eclipse.ui.ide.multiFilter</id>
         <arguments>1.0-name-matches-false-false-*.wvproj</arguments>

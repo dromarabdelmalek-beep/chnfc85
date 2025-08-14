@@ -31,6 +31,7 @@ __attribute__((aligned(4))) uint8_t g_picc_parity_buf[PICC_DATA_BUF_LEN];
 void nfca_picc_init(void)
 {
     nfca_picc_config_t cfg;
+    uint8_t res;
 
     /* 对于EVT板NFC CTR引脚，如果分时使用卡和读卡器，NFC CTR引脚和PA7短接，在开始PICC之前，需要将该引脚置为模拟输入 */
     /* 如果只使用卡模式，NFC CTR引脚无需和PA7短接，则无需初始化该引脚，注释下面的代码。 */
@@ -54,7 +55,12 @@ void nfca_picc_init(void)
     cfg.data_buf = g_picc_data_buf;
     cfg.data_buf_len = PICC_DATA_BUF_LEN;
 
-    nfca_picc_lib_init(&cfg);
+    res = nfca_picc_lib_init(&cfg);
+    if(res)
+    {
+        PRINT("nfca picc lib init error\n");
+        while(1);
+    }
 }
 
 void nfca_picc_start(void)

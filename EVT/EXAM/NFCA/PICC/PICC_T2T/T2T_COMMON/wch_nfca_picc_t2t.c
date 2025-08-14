@@ -9,7 +9,7 @@
  *******************************************************************************/
 #include "wch_nfca_picc_t2t.h"
 
-/* Ã¿¸öÎÄ¼şµ¥¶Àdebug´òÓ¡µÄ¿ª¹Ø£¬ÖÃ0¿ÉÒÔ½ûÖ¹±¾ÎÄ¼şÄÚ²¿´òÓ¡ */
+/* æ¯ä¸ªæ–‡ä»¶å•ç‹¬debugæ‰“å°çš„å¼€å…³ï¼Œç½®0å¯ä»¥ç¦æ­¢æœ¬æ–‡ä»¶å†…éƒ¨æ‰“å° */
 #define DEBUG_PRINT_IN_THIS_FILE 0
 #if DEBUG_PRINT_IN_THIS_FILE
     #define PRINTF(...) PRINT(__VA_ARGS__)
@@ -60,13 +60,13 @@ uint16_t sak2_pre_len;
 uint8_t iso14443a_sak2_pre_raw_data[NFCA_PICC_TX_PRE_OUT_LEN(ISO14443A_SAK_FRAME_SIZE)];
 #endif
 
-/* »Øµ÷º¯Êı»áÔÚÖĞ¶ÏÀïµ÷ÓÃ£¬ËùÒÔĞèÒª×¢ÒâºÍÍâ²¿³ÌĞòµÄÏß³Ì°²È«´úÂë´¦Àí*/
+/* å›è°ƒå‡½æ•°ä¼šåœ¨ä¸­æ–­é‡Œè°ƒç”¨ï¼Œæ‰€ä»¥éœ€è¦æ³¨æ„å’Œå¤–éƒ¨ç¨‹åºçš„çº¿ç¨‹å®‰å…¨ä»£ç å¤„ç†*/
 static nfca_picc_cb_t gs_nfca_picc_t2t_cb =
 {
     .online = nfca_picc_t2t_online,
     .data_handler = nfca_picc_t2t_data_handler,
     .offline = nfca_picc_t2t_offline,
-};   /* T2T¿¨Êı¾İ´¦Àí»Øµ÷ */
+};   /* T2Tå¡æ•°æ®å¤„ç†å›è°ƒ */
 
 __attribute__((section(".highcode")))
 static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
@@ -201,7 +201,7 @@ static uint16_t nfca_picc_t2t_data_handler(uint16_t bits_num)
         else if(g_picc_data_buf[0] == CMD_WRITE)
         {
             uint8_t page_address = g_picc_data_buf[1];
-            if((page_address < 135) && (page_address > 3))
+            if((page_address < WCH_NFCA_PICC_T2T_PAGES_NUM) && (page_address > 3))
             {
                 g_nfca_picc_t2t_data.pages[page_address].data8[0] = g_picc_data_buf[2];
                 g_nfca_picc_t2t_data.pages[page_address].data8[1] = g_picc_data_buf[3];
