@@ -476,6 +476,15 @@ static void touch_Baseinit(void)
     dg_log("TKY_BaseInit:%02X\r\n",sta);
 }
 
+#define TKY_MAX_VOLTAGE     2100
+#define TKY_DST_VOLTAGE     2100
+
+#define TKY_MAX_FACTOR   90
+#define TKY_MIN_FACTOR   75
+
+static uint32_t maxCDParams = (TKY_MAX_FACTOR * TKY_DST_VOLTAGE*4096)/(TKY_MAX_VOLTAGE*100);
+static uint32_t minCDParams = (TKY_MIN_FACTOR * TKY_DST_VOLTAGE*4096)/(TKY_MAX_VOLTAGE*100);
+
 /********************************************************************************************************
  * @fn      touch_Channelinit
  * @brief   触摸通道初始化
@@ -488,23 +497,25 @@ static void touch_Channelinit(void)
     uint16_t chx_mean = 0,chx_mean_last = 0;
     for(uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
     {
-    	TKY_CHInit(my_tky_ch_init[i]);
+        TKY_CHInit(my_tky_ch_init[i]);
     }
+
+    dg_log("minCDParams : %d, maxCDParams : %d\n",minCDParams, maxCDParams);
 
     for(uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
     {
 
-    	chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, my_tky_ch_init[i].chargeTime,
-										 my_tky_ch_init[i].disChargeTime, 1000);
+        chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, my_tky_ch_init[i].chargeTime,
+                                         my_tky_ch_init[i].disChargeTime, 1000);
 
-    	if(chx_mean < 3000 || chx_mean > 3800)
-    	{
-    		error_flag = 1;
-    	}
-    	else
-    	{
-    		TKY_SetCurQueueBaseLine(i, chx_mean);
-    	}
+        if(chx_mean < minCDParams || chx_mean > maxCDParams)
+        {
+            error_flag = 1;
+        }
+        else
+        {
+            TKY_SetCurQueueBaseLine(i, chx_mean);
+        }
     }
     //充放电基线值异常，重新校准基线值
     if(error_flag != 0)
@@ -512,7 +523,7 @@ static void touch_Channelinit(void)
         dg_log("\n\nCharging parameters error, preparing for recalibration ...\n\n");
         uint16_t charge_time;
         for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
-        { 
+        {
           charge_time = 0,chx_mean = 0;
           while (1)
           {
@@ -520,24 +531,25 @@ static void touch_Channelinit(void)
 
 //              dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//打印基线值
 
-              if ((charge_time == 0) && ((chx_mean > 3800))) {//低于最小充电参数
+              if ((charge_time == 0) && ((chx_mean > maxCDParams))) {//低于最小充电参数
                   dg_log("Error, %u KEY%u Too small Cap,Please check the hardware !\r\n",chx_mean,i);
                   break;
               }
               else {
-                  if ((chx_mean > 3000) &&(chx_mean < 3800)) {//充电参数正常
+                  if ((chx_mean > minCDParams) &&(chx_mean < maxCDParams)) {//充电参数正常
                       TKY_SetCurQueueBaseLine(i, chx_mean);
                       TKY_SetCurQueueChargeTime(i,charge_time,3);
                       dg_log("channel:%u, chargetime:%u,BaseLine:%u\r\n",
                             i, charge_time, chx_mean);
                       break;
-                  }else if(chx_mean >= 3800)
+                  }
+                  else if(chx_mean >= maxCDParams)
                   {
-                	  TKY_SetCurQueueBaseLine (i, chx_mean_last);
+                      TKY_SetCurQueueBaseLine (i, chx_mean_last);
                       TKY_SetCurQueueChargeTime(i,charge_time-1,3);
-                	  dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
-                	                              i, charge_time, chx_mean);
-                	  break;
+                      dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
+                                                  i, charge_time, chx_mean);
+                      break;
                   }
                   charge_time++;
                   chx_mean_last = chx_mean;
@@ -550,6 +562,79 @@ static void touch_Channelinit(void)
         }
     }
     TKY_SaveAndStop();
+}
+
+
+
+/********************************************************************************************************
+ * @fn      touch_Recalibrate
+ * @brief   触摸参数重新校准
+ * @param   无
+ * @return  无
+ */
+void touch_Recalibrate(void)
+{
+    uint16_t chx_mean = 0,chx_mean_last = 0;
+    uint8_t recal_flag = 0;
+
+
+    uint8_t j;
+    for ( j = 0; j < TKY_MAX_QUEUE_NUM; j++)
+    {
+        uint16_t realval = TKY_GetCurQueueRealVal( j );
+//        dg_log("realval %d %d %d\n",j,realval,maxCDParams);
+        if(realval > maxCDParams)
+        {
+            recal_flag = 1;
+        }
+    }
+
+    if((1 == recal_flag) )
+    {
+        TKY_ClearHistoryData(TKY_FILTER_MODE);
+
+        TKY_LoadAndRun();
+        dg_log("\n\nCharging parameters error, preparing for recalibration ...\n\n");
+            uint16_t charge_time;
+            for (uint8_t i = 0; i < TKY_MAX_QUEUE_NUM; i++)
+            {
+              charge_time = 0,chx_mean = 0;
+              while (1)
+              {
+                  chx_mean = TKY_GetCurChannelMean(my_tky_ch_init[i].channelNum, charge_time,3, 1000);
+
+//                      dg_log("testing .... chg : %d, baseline : %d\n",charge_time,chx_mean);//打印基线值
+
+                  if ((charge_time == 0) && ((chx_mean > minCDParams))) {//低于最小充电参数
+                      dg_log("Error, %u KEY%u Too small Cap,Please check the hardware !\r\n",chx_mean,i);
+                      break;
+                  }
+                  else {
+                      if ((chx_mean > minCDParams) &&(chx_mean < maxCDParams)) {//充电参数正常
+                          TKY_SetCurQueueBaseLine(i, chx_mean);
+                          TKY_SetCurQueueChargeTime(i,charge_time,3);
+                          dg_log("channel:%u, chargetime:%u,BaseLine:%u\r\n",
+                                i, charge_time, chx_mean);
+                          break;
+                      }else if(chx_mean >= maxCDParams)
+                      {
+                          TKY_SetCurQueueBaseLine (i, chx_mean_last);
+                          TKY_SetCurQueueChargeTime(i,charge_time-1,3);
+                          dg_log("Warning,channel:%u Too large Current, chargetime:%u,BaseLine:%u\r\n",
+                                                      i, charge_time, chx_mean);
+                          break;
+                      }
+                      charge_time++;
+                      chx_mean_last = chx_mean;
+                      if (charge_time > 0x1f) {    //超出最大充电参数
+                          dg_log("Error, Chargetime Max,KEY%u Too large Cap,Please check the hardware !\r\n",i);
+                          break;
+                      }
+                  }
+              }
+            }
+            TKY_SaveAndStop();
+    }
 }
 
 

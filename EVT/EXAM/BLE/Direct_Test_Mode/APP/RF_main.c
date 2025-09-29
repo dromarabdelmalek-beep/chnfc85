@@ -15,6 +15,7 @@
 #include "CONFIG.h"
 #include "HAL.h"
 #include "rf_test.h"
+#include "app_usb.h"
 
 /*********************************************************************
  * GLOBAL TYPEDEFS
@@ -42,12 +43,6 @@ void Main_Circulation()
     }
 }
 
-
-void test(void)
-{
-    PRINT("flash test\n");
-}
-
 /*********************************************************************
  * @fn      main
  *
@@ -57,15 +52,8 @@ void test(void)
  */
 int main(void)
 {
-#if(defined(DCDC_ENABLE)) && (DCDC_ENABLE == TRUE)
-    PWR_DCDCCfg(ENABLE);
-#endif
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
-#if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
-    GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-    GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
-#endif
+    SetSysClock(SYSCLK_FREQ);
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);
     GPIOPinRemap(ENABLE, RB_PIN_UART0);
@@ -74,9 +62,6 @@ int main(void)
     UART0_DefInit();
     UART0_BaudRateCfg( 115200 );
 #endif
-//    GPIOA_SetBits(bTXD1);
-//    GPIOA_ModeCfg(bTXD1, GPIO_ModeOut_PP_5mA);
-//    GPIOA_ModeCfg(bRXD1, GPIO_ModeIN_PU);
     GPIOB_SetBits(bTXD1_);
     GPIOB_ModeCfg(bTXD1_, GPIO_ModeOut_PP_5mA);
     GPIOB_ModeCfg(bRXD1_, GPIO_ModeIN_PU);
@@ -88,6 +73,7 @@ int main(void)
     PRINT("%s\n", VER_LIB);
     CH58x_BLEInit();
     HAL_Init();
+    app_usb_init();
     RFRole_Init();
     DtmProcess();
 }

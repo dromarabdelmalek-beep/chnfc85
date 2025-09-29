@@ -82,23 +82,23 @@ void TKY_WheelSliderLedProcess (uint16_t pros);
 void TKY_dataProcess (void)
 {
     static uint8_t key_val = 0xff;
-    static uint16_t print_time = 0;
+    static uint16_t recal_time = 0;
     uint16_t Wheel_pros = 0;
     uint16_t Slider_pros = 0;
     static uint8_t touchinsflag = 0;
 
-    if (timerFlag)
+    if(timerFlag)
     {
         timerFlag = 0;
         touch_Scan();
-#if PRINT_EN
-        print_time++;
-        if (print_time == 500)
+        if(recal_time % 500 == 0)
         {
-            print_time = 0;
+#if PRINT_EN
             touch_InfoDebug();
-        }
 #endif
+            touch_Recalibrate();
+        }
+        recal_time++;
     }
     key_val = touch_GetKey();
     switch (key_val)

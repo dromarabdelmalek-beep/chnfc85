@@ -61,7 +61,7 @@ int main()
     uint8_t s, c, i;
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 
     GPIOA_SetBits(GPIO_Pin_14);
     GPIOPinRemap(ENABLE, RB_PIN_UART0);

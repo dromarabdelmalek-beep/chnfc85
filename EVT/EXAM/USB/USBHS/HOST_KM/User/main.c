@@ -34,7 +34,7 @@ void DebugInit(void)
  */
 int main(void)
 {
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
 
     TMR3_TimerInit(FREQ_SYS / 10000);

@@ -1,13 +1,13 @@
 Vendor=WCH
 Toolchain=RISC-V
-Series=CH585
+Series=CH32L103
 RTOS=NoneOS
-MCU=CH585M
+MCU=CH32L103C8T6
 Link=WCH-Link
 PeripheralVersion=1.0
 Description=
-Mcu Type=CH584/5
-Address=0x00000000
+Mcu Type=
+Address=
 Target Path=obj/Touch_EX001.hex
 Exe Path=
 Exe Arguments=

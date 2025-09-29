@@ -312,7 +312,7 @@ next_loop:
 int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

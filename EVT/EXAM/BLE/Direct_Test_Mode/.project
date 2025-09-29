@@ -37,7 +37,7 @@
 		<link>
 			<name>Ld</name>
 			<type>2</type>
-			<locationURI>PARENT-2-PROJECT_LOC/SRC/Ld</locationURI>
+			<locationURI>PROJECT_LOC/Ld</locationURI>
 		</link>
 		<link>
 			<name>RVMSIS</name>

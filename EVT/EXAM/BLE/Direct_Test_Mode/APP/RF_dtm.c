@@ -14,6 +14,7 @@
 #include "rf_test.h"
 #include "hal.h"
 #include "RingMem.h"
+#include "app_usb.h"
 /*********************************************************************
  * GLOBAL TYPEDEFS
  */
@@ -31,6 +32,9 @@ __attribute__((__aligned__(4))) uint8_t RxBuf[264]; // ½ÓÊÕDMA buf²»ÄÜÐ¡ÓÚ264×Ö½
 
 uint8_t uartRingMemBuff[1024];
 RingMemParm uartRingParm = {0};
+uint8_t usbRingMemBuff[1024];
+RingMemParm usbRingParm = {0};
+
 const uint8_t endTestCmd[4]={0x01, 0x1F, 0x20, 0x00};
 const uint8_t resetCmd[4]={0x01, 0x03, 0x0C, 0x00};
 const uint8_t receiverCmd[4]={0x01, 0x1D, 0x20, 0x01};
@@ -57,7 +61,7 @@ uint32_t gTxCount;
 uint32_t gRxCount;
 
 /******************************** ·¢ËÍÏà¹Øº¯Êý ********************************/
-/**
+/*******************************************************************************
  * @brief   ÅäÖÃ·¢ËÍµÄÆµµã
  *
  * @param   channel_num - ÐèÒªÇÐ»»µÄÍ¨µÀ
@@ -70,7 +74,7 @@ void rf_tx_set_channel( uint8_t channel_num )
     gTxParam.frequency = channel_num;
 }
 
-/**
+/*******************************************************************************
  * @brief   ÅäÖÃ·¢ËÍµÄµØÖ·
  *
  * @param   sync_word - ÐèÒªÅäÖÃµÄ½ÓÈëµØÖ·
@@ -83,7 +87,7 @@ void rf_tx_set_sync_word( uint32_t sync_word )
     gTxParam.accessAddress = sync_word;
 }
 
-/**
+/*******************************************************************************
  * @brief   rf·¢ËÍÊý¾Ý×Ó³ÌÐò
  *
  * @param   pBuf - ·¢ËÍµÄDMAµØÖ·
@@ -100,7 +104,7 @@ void rf_tx_start( uint8_t *pBuf )
 }
 
 /******************************** ½ÓÊÕÏà¹Øº¯Êý ********************************/
-/**
+/*******************************************************************************
  * @brief   ÅäÖÃ½ÓÊÕµÄµØÖ·
  *
  * @param   sync_word - ÐèÒªÅäÖÃµÄ½ÓÈëµØÖ·
@@ -114,7 +118,7 @@ void rf_rx_set_sync_word( uint32_t sync_word )
     gRxParam.accessAddress = sync_word;
 }
 
-/**
+/*******************************************************************************
  * @brief   ÅäÖÃ½ÓÊÕµÄÆµµã
  *
  * @param   channel_num - ÐèÒªÇÐ»»µÄÍ¨µÀ
@@ -128,7 +132,7 @@ void rf_rx_set_channel( uint8_t channel_num )
     gRxParam.frequency = channel_num;
 }
 
-/**
+/*******************************************************************************
  * @brief   rf½ÓÊÕÊý¾Ý×Ó³ÌÐò
  *
  * @param   None.
@@ -144,34 +148,15 @@ void rf_rx_start( void )
     RFIP_SetRx( &gRxParam );
 }
 
-///*******************************************************************************
-// * @fn      LLE_IRQHandler
-// *
-// * @brief   LLE_IRQHandler
-// *
-// * @return  None.
-// */
-//__INTERRUPT
-//__HIGH_CODE
-//void LLE_IRQHandler( void )
-//{
-//    LLE_LibIRQHandler( );
-//}
-//
-///*******************************************************************************
-// * @fn      BB_IRQHandler
-// *
-// * @brief   BB_IRQHandler
-// *
-// * @return  None.
-// */
-//__INTERRUPT
-//__HIGH_CODE
-//void BB_IRQHandler( void )
-//{
-//    BB_LibIRQHandler( );
-//}
-
+/*******************************************************************************
+ * @fn      m_UART_SendString
+ *
+ * @brief   uart·¢ËÍº¯Êý
+ *
+ * @param   *buf - ·¢ËÍbuffer.
+ *
+ * @return  None.
+ */
 __HIGH_CODE
 void m_UART_SendString(uint8_t *buf, uint16_t l)
 {
@@ -186,6 +171,16 @@ void m_UART_SendString(uint8_t *buf, uint16_t l)
         }
     }
 }
+
+/*******************************************************************************
+ * @fn      m_UART_RecvString
+ *
+ * @brief   uart½ÓÊÕº¯Êý
+ *
+ * @param   *buf - ½ÓÊÕbuffer.
+ *
+ * @return  None.
+ */
 __HIGH_CODE
 uint16_t m_UART_RecvString(uint8_t *buf)
 {
@@ -268,22 +263,7 @@ tmosEvents RFRole_ProcessEvent( tmosTaskID task_id, tmosEvents events )
     {
         rf_rx_start( );
     }
-//    if( events & RF_TEST_TX_EVENT )
-//    {
-//        PRINT("%d\t%d\t%d\n",gTxCount,gRxCount,gRssiAverage );
-//        gTxCount = 0;
-//        gRxCount = 0;
-//        gRssiAverage = 0;
-//        return events ^ RF_TEST_TX_EVENT;
-//    }
-//    if( events & RF_TEST_RX_EVENT )
-//    {
-//        PRINT("%d\t%d\t%d\n",gTxCount,gRxCount,gRssiAverage );
-//        gTxCount = 0;
-//        gRxCount = 0;
-//        gRssiAverage = 0;
-//        return events ^ RF_TEST_RX_EVENT;
-//    }
+
     return 0;
 }
 
@@ -301,11 +281,12 @@ void RFRole_Init(void)
 {
     rfTaskID = TMOS_ProcessEventRegister( RFRole_ProcessEvent );
     RingMemInit( &uartRingParm, uartRingMemBuff, sizeof(uartRingMemBuff) );
+    RingMemInit( &usbRingParm, usbRingMemBuff, sizeof(usbRingMemBuff) );
     {
         rfRoleConfig_t conf ={0};
 
-        rf_cfg.TxPower = LL_TX_POWEER_0_DBM;
-        conf.TxPower = LL_TX_POWEER_0_DBM;
+        rf_cfg.TxPower = BLE_TX_POWER;
+        conf.TxPower = BLE_TX_POWER;
         conf.rfProcessCB = RF_ProcessCallBack;
         conf.processMask = RF_STATE_RX|RF_STATE_RX_CRCERR|RF_STATE_TX_FINISH|RF_STATE_TIMEOUT;
         RFRole_BasicInit( &conf );
@@ -339,7 +320,16 @@ void RFRole_Init(void)
     PFIC_EnableIRQ( BLEL_IRQn );
 }
 
-__attribute__((interrupt("WCH-Interrupt-fast")))
+/*******************************************************************************
+ * @fn      UART1_IRQHandler
+ *
+ * @brief   ´®¿Ú1ÖÐ¶Ïº¯Êý
+ *
+ * @param   None.
+ *
+ * @return  None.
+ */
+__INTERRUPT
 __HIGH_CODE
 void UART1_IRQHandler()
 {
@@ -365,8 +355,6 @@ void UART1_IRQHandler()
         }
       }
 }
-
-
 
 /*******************************************************************************
  * @fn      Choose_CH
@@ -394,7 +382,6 @@ uint8 Choose_CH( uint8 cch )
     return 0;
 }
 
-
 /*******************************************************************************
  * @fn      UART_Process_Data
  *
@@ -404,12 +391,11 @@ uint8 Choose_CH( uint8 cch )
  *
  * @return  None.
  */
-
 uint8 single =0;
 __HIGH_CODE
 void UART_Process_Data(void)
 {
- if( uartRingParm.CurrentLen >=4  )
+ if( uartRingParm.CurrentLen >= 4  )
  {
     uint8_t pData[23];
     uint8 dataLen;
@@ -615,6 +601,223 @@ void UART_Process_Data(void)
  }
 }
 
+/*******************************************************************************
+ * @fn      USB_Process_Data
+ *
+ * @brief   ´®¿ÚÐÅÁî´¦Àí
+ *
+ * @param   None.
+ *
+ * @return  None.
+ */
+__HIGH_CODE
+void USB_Process_Data(void)
+{
+ if( usbRingParm.CurrentLen >= 4  )
+ {
+    uint8_t pData[23];
+    uint8 dataLen;
+    if( RingReturnSingleData( &usbRingParm, 0 )!=0x01 )
+    {
+      RingMemDelete( &usbRingParm, 1 );
+      return;
+    }
+    dataLen = RingReturnSingleData( &usbRingParm, 3 );
+    if( usbRingParm.CurrentLen < dataLen+4 )
+    {
+      return;
+    }
+    RingMemCopy( &usbRingParm, pData, dataLen+4 );
+
+    if( __wrap_memcmp( pData, endTestCmd, 4 ) == 0)
+    {
+      RFRole_Shut();
+      cmdCompleteEvt[2] = 0x06;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      if( single == 1)
+      {
+        RFIP_TestEnd();
+        single = 0;
+      }
+      if( TEST_MODE == MODE_TX )
+      {
+        cmdCompleteEvt[7] = (gTxCount)&0xFF;
+        cmdCompleteEvt[8] = ((gTxCount)>>8)&0xFF;
+        USBSendData( cmdCompleteEvt, 9 );
+        ch=0;
+        gRxCount = 0;
+        gTxCount = 0;
+        TEST_MODE = 0xFF;
+      }
+      else
+      {//rx
+        cmdCompleteEvt[7] = (gRxCount)&0xFF;
+        cmdCompleteEvt[8] = ((gRxCount)>>8)&0xFF;
+        USBSendData( cmdCompleteEvt, 9 );
+        ch=0;
+        gRxCount = 0;
+        gTxCount = 0;
+        TEST_MODE = 0xFF;
+      }
+    }
+    else if( __wrap_memcmp( pData, SingleCarrierCmd, 4 ) == 0)
+    {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch = pData[4];
+      single = 1;
+      RFIP_SetTxPower( rf_cfg.TxPower );  //flash
+      RFIP_SingleChannel( ch );
+    }
+    else if( __wrap_memcmp( pData, resetCmd, 4 ) == 0)
+    {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch=0;
+      gRxCount = 0;
+      gTxCount = 0;
+      TEST_MODE = 0xFF;
+    }
+    else if( __wrap_memcmp( pData, receiverCmd, 4 ) == 0)
+    {
+      RFRole_Shut();
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch = Choose_CH(pData[4]);
+      gRxCount = 0;
+      gRxParam.properties &=~(3<<4);
+      gRxParam.frequency = ch;
+      TEST_MODE = MODE_RX;
+      rf_rx_start();
+    }
+    else if( __wrap_memcmp( pData, transmitterCmd, 4 ) == 0)
+    {
+      RFRole_Shut();
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch = Choose_CH(pData[4]);
+      gRxCount = 0;
+      gTxParam.properties &=~(3<<4);;
+      gTxParam.frequency = ch;
+      TxBuf[1] = pData[5];
+      TxBuf[0] = pData[6];
+      TEST_MODE = MODE_TX;
+      TX_DATA( TxBuf, TxBuf[1] );
+      rf_tx_start(TxBuf);
+   }
+   else if( __wrap_memcmp( pData, setPowerCmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      rf_cfg.TxPower = pData[4];
+      RFIP_SetTxPower( rf_cfg.TxPower );
+    }
+   else if( __wrap_memcmp( pData, pFCmd, 4 ) == 0)
+   {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      //µçÈÝ
+      R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG1;
+      R8_SAFE_ACCESS_SIG = SAFE_ACCESS_SIG2;
+      R8_XT32M_TUNE &= ~RB_XT32M_C_LOAD;
+      R8_XT32M_TUNE |= pData[4]<<4;
+      R8_SAFE_ACCESS_SIG = 0;
+   }
+   else if( __wrap_memcmp( pData, receiver2MCmd, 2 ) == 0)
+   {
+      RFRole_Shut();
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch = Choose_CH(pData[4]);
+
+      if( pData[5]==1 )
+      {
+          gRxParam.properties &=~(3<<4);
+      }
+      else if( pData[5]==2 )
+      {
+          gRxParam.properties |= LLE_MODE_PHY_2M ;
+      }
+      gRxCount = 0;
+      gRxParam.frequency = ch;
+      TEST_MODE = MODE_RX;
+      rf_rx_start();
+    }
+    else if( __wrap_memcmp( pData, transmitter2MCmd, 2 ) == 0)
+    {
+      RFRole_Shut();
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+      ch = Choose_CH(pData[4]);
+      TxBuf[1] = pData[5];
+      TxBuf[0] = pData[6];
+      TX_DATA( TxBuf, TxBuf[1] );
+     if( pData[7]==1 )
+     {
+        gTxParam.properties &=~(3<<4);
+      }
+      else if( pData[7]==2 )
+      {
+        gTxParam.properties |= LLE_MODE_PHY_2M ;
+      }
+      else if( pData[7]==3 )
+      {
+      }
+      else if( pData[7]==4 )
+      {
+      }
+      gRxCount = 0;
+      gTxParam.frequency = ch;
+      TEST_MODE = MODE_TX;
+      rf_tx_start(TxBuf);
+    }
+    else
+    {
+      cmdCompleteEvt[2] = 0x04;
+      cmdCompleteEvt[3] = 0x01;
+      cmdCompleteEvt[4] = pData[1];
+      cmdCompleteEvt[5] = pData[2];
+      cmdCompleteEvt[6] = 0x00;
+      USBSendData( cmdCompleteEvt, 7 );
+    }
+    RingMemDelete( &usbRingParm, dataLen+4 );
+ }
+}
 
 /*******************************************************************************
  * @fn      PRBS9_Get
@@ -683,7 +886,6 @@ void PRBS15_Get( uint8 *pData, uint16 len )
  *
  * @return  None.
  */
-
 __HIGH_CODE
 void TX_DATA( uint8_t* buf, uint8_t len )
 {
@@ -733,16 +935,22 @@ void TX_DATA( uint8_t* buf, uint8_t len )
   buf[1] = len;
 }
 
-
+/*******************************************************************************
+ * @fn      DtmProcess
+ *
+ * @brief   dtmÊý¾Ý´¦Àíº¯Êý
+ *
+ * @param   None.
+ *
+ * @return  None.
+ */
 __HIGH_CODE
 void DtmProcess(void)
 {
-// sys_safe_access_enable();
-// R8_FLASH_SCK &= ~(1<<4);
-// R8_FLASH_CFG = 0X00;       //312/(2*2)=312/4=78M
-// sys_safe_access_disable();
-  while(1){
+  while(1)
+  {
     UART_Process_Data();
+    USB_Process_Data();
     if(ttflag)
     {
       mDelayuS(150);

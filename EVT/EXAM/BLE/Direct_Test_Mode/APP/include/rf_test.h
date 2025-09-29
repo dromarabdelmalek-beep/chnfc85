@@ -15,6 +15,7 @@ extern "C"
 #endif
 #include "wchrf.h"
 #include "CH58x_common.h"
+#include "RingMem.h"
 
 #define RF_TEST_SLEEP_EVENT      (1<<0)
 #define RF_START_RX_EVENT        (1<<1)
@@ -28,6 +29,8 @@ extern "C"
 
 #define  PHY_MODE      LLE_MODE_PHY_2M
 
+extern uint8_t usbRingMemBuff[1024];
+extern RingMemParm usbRingParm;
 
 typedef struct
 {

@@ -59,20 +59,20 @@ static void TKY_PeripheralInit(void);
 void TKY_dataProcess(void)
 {
     uint8_t key_val = 0;
-    static uint16_t print_time = 0;
+    static uint16_t recal_time = 0;
 
     if(timerFlag)
     {
         timerFlag = 0;
         touch_Scan();
-#if PRINT_EN
-        print_time++;
-        if(print_time == 500)
+        if(recal_time % 500 == 0)
         {
-            print_time = 0;
+#if PRINT_EN
             touch_InfoDebug();
-        }
 #endif
+            touch_Recalibrate();
+        }
+        recal_time++;
     }
     key_val = touch_GetKey();
     switch(key_val)

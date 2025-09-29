@@ -47,7 +47,7 @@ int main()
     uint8_t i;
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 
     /* ÅäÖÃ´®¿Úµ÷ÊÔ */
     DebugInit();

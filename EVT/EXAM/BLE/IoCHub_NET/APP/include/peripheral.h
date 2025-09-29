@@ -37,10 +37,15 @@ extern "C" {
 /*********************************************************************
  * MACROS
  */
-#define LED_LINK_PIN    GPIO_Pin_18
-#define LED_LIGHT_PIN GPIO_Pin_19
-#define KEY_SWITCH_PIN  GPIO_Pin_4
+#define LED_LINK_PIN    GPIO_Pin_8
+#define LED_LIGHT_PIN GPIO_Pin_17
 
+#define KEY_SWITCH_PIN  GPIO_Pin_22
+#define KEY_SWITCH_PORT   GPIOB
+#define KEY_SWITCH    1
+#define KEY_NONE            0xFF
+
+#define FILTER_TIMES    100
 /*===============================DP数据点类型===========================================*/
 #define         DP_TYPE_RAW                     0x00        //RAW 类型
 #define         DP_TYPE_BOOL                    0x01        //bool 类型

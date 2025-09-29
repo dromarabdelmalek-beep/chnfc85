@@ -23,13 +23,29 @@ unsigned char const lcd[14]={0x7d, 0x60, 0x3e, 0x7a, 0x63, 0x5b, 0x5f, 0x70, 0x0
      |----| .P
        D
 */
+
 /* 注意：使用此例程，下载时需关闭外部手动复位功能 */
+
+/*********************************************************************
+ * @fn      PM_LowPower_Sleep
+ *
+ * @brief   调用Sleep睡眠驱动，此函数需要在RAM中运行
+ *
+ * @return  none
+ */
+__HIGH_CODE
+void PM_LowPower_Sleep(void)
+{
+    LowPower_Sleep(RB_PWR_RAM96K | RB_PWR_RAM32K ); //只保留96+32K SRAM 供电
+    DelayUs(300);
+}
+
 int main()
 {
     uint32_t VER = 0;
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
     LCD_Init(LCD_1_4_Duty, LCD_1_3_Bias);
 
     LCD_WriteData0( lcd[0] );
@@ -55,7 +71,7 @@ int main()
     GPIOA_ITModeCfg(GPIO_Pin_5, GPIO_ITMode_FallEdge); // 下降沿唤醒
     PFIC_EnableIRQ(GPIO_A_IRQn);
     PWR_PeriphWakeUpCfg(ENABLE, RB_SLP_GPIO_WAKE, Long_Delay);
-    LowPower_Sleep(RB_PWR_RAM32K | RB_PWR_RAM96K | RB_XT_PRE_EN); //只保留96+32K SRAM 供电
+    PM_LowPower_Sleep();
     HSECFG_Current(HSE_RCur_100);                 // 降为额定电流(低功耗函数中提升了HSE偏置电流)
 #endif
 

@@ -70,7 +70,7 @@ void DebugInit( void )
  */
 int main(void)
 {
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
 
     /* General USB Host UDisk Operation Initialization */

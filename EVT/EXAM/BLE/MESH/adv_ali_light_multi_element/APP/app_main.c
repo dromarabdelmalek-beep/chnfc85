@@ -88,7 +88,7 @@ uint8_t bt_mesh_lib_init( void )
  */
 int main( void )
 {
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
 
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

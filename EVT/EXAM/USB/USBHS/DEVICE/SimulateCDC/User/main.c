@@ -47,7 +47,7 @@ void DebugInit(void)
  */
 int main(void)
 {
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
     PRINT( "Simulate USB-CDC Device running on USBHS Controller\r\n" );
 

@@ -118,7 +118,7 @@ void USB_DevTransProcess(void)
         g_tcnt = 0; //USB有数据，清空超时计数
 
         endp_num = intst & USBHS_UDIS_EP_ID_MASK;
-        if( !(R8_USB2_INT_ST & USBHS_UDIS_EP_DIR )) // SETUP/OUT Transaction
+        if( !(intst & USBHS_UDIS_EP_DIR )) // SETUP/OUT Transaction
         {
             switch( endp_num )
             {
@@ -444,7 +444,7 @@ void USB_DevTransProcess(void)
             }
         }
     }
-    else if( R8_USB2_INT_FG & USBHS_UDIF_LINK_RDY )
+    else if( intflag & USBHS_UDIF_LINK_RDY )
     {
 
 #ifdef  SUPPORT_USB_HSI

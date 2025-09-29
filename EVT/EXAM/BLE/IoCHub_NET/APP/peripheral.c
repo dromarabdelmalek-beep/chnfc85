@@ -15,9 +15,7 @@
  */
 #include "CONFIG.h"
 #include "devinfoservice.h"
-#include "gattprofile.h"
 #include "peripheral.h"
-
 #include "ble_iochub_service.h"
 #include "app_drv_fifo.h"
 
@@ -67,19 +65,15 @@ void on_bleiochubServiceEvt(uint16_t connection_handle, ble_iochub_evt_t *p_evt)
             break;
         case BLE_IOCHUB_EVT_BLE_DATA_RECIEVED:
             PRINT("BLE RX DATA len:%d\r\n", p_evt->data.length);
-            PRINT("R:");
-            for(uint8_t i = 0; i < p_evt->data.length;i++)
-            {
-                PRINT("%02x ",*(p_evt->data.p_data+i));
-            }
-            PRINT("\n");
 
             //for notify back test
             //to ble
             uint16_t to_write_length = p_evt->data.length;
+//            //for notify back test
+//            //to ble
 //            app_drv_fifo_write(&app_ble_tx_fifo, (uint8_t *)p_evt->data.p_data, &to_write_length);
-//            tmos_start_task(Peripheral_TaskID, IOCHUB_TO_BLE_SEND_EVT, 2);
-            //end of nofify back test
+//            tmos_start_task(Peripheral_TaskID, IOCHUB_TO_BLE_SEND_EVT, 0);
+//            //end of nofify back test
 
             app_drv_fifo_write(&app_ble_rx_fifo, (uint8_t *)p_evt->data.p_data, &to_write_length);
             tmos_start_task(Peripheral_TaskID, IOCHUB_DATA_PROCESS_EVT, 2);
@@ -469,13 +463,6 @@ uint16_t Peripheral_ProcessEvent(uint8_t task_id, uint16_t events)
                         }
                         else
                         {
-                            PRINT("T:");
-                            for(uint8_t i = 0; i < noti.len;i++)
-                            {
-                                PRINT("%02x ",to_test_buffer[i]);
-                            }
-                            PRINT("\n");
-
                             send_to_ble_state = SEND_TO_BLE_TO_SEND;
                             //app_fifo_write(&app_ble_tx_fifo,to_test_buffer,&read_length);
                             //app_drv_fifo_write(&app_ble_tx_fifo,to_test_buffer,&read_length);
@@ -652,6 +639,7 @@ static void Peripheral_LinkTerminated(gapRoleEvent_t *pEvent)
             uint8_t advertising_enable = TRUE;
             GAPRole_SetParameter(GAPROLE_ADVERT_ENABLED, sizeof(uint8_t), &advertising_enable);
             GPIOB_SetBits(LED_LINK_PIN);
+            tmos_stop_task(Peripheral_TaskID, IOCHUB_ALL_DP_UPLOAD_EVT);
         }
     }
     else

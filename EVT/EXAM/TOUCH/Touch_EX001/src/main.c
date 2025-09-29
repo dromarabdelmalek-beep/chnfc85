@@ -64,7 +64,7 @@ void DebugInit(void)
 int main(void)
 {
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 	DebugInit();
 	PRINT("Touch Utility\n");
     TKY_Init();

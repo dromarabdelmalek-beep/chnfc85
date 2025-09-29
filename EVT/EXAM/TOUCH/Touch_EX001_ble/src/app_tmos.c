@@ -28,6 +28,7 @@
 tmosTaskID TouchKey_TaskID = 0x00;
 uint16_t triggerTime = SLEEP_TRIGGER_TIME;
 extern volatile uint8_t led_scanflag;
+volatile uint8_t tky_flag = 0;
 
 static const uint8_t touch_key_ch[ TOUCH_KEY_ELEMENTS ] = {TOUCH_KEY_CHS};
 KEY_T s_tBtn[TOUCH_KEY_ELEMENTS] = {0};
@@ -217,6 +218,14 @@ void PeriodicDealData(void)
     {
         dg_log("wake up...\n");
 
+        if(!tky_flag)
+        {
+            for(uint8_t m = 0; m < TKY_MAX_QUEUE_NUM; m++)
+            {
+                TKY_SetCurQueueBaseLine(m, TKY_GetCurQueueRealVal(m));
+            }
+        }
+
         scandata = TKY_ScanForWakeUp(tkyQueueAll); //---对所选择的队列通道进行扫描---
         if (scandata) //---如扫描有异常，则调用正式扫描函数模式3~4---
         {
@@ -225,6 +234,7 @@ void PeriodicDealData(void)
                 keydata = TKY_PollForFilter();
                 if (keydata) //---一旦检测到有按键按下，则退出循环扫描---
                 {
+                    tky_flag = 1;
                 	touch_ScanWakeUp();
                     triggerTime = TRIGGER_TIME;
                     tky_DealData_start();
@@ -295,7 +305,7 @@ tmosEvents Touch_Key_ProcessEvent(tmosTaskID task_id, tmosEvents events)
 #if TKY_SLEEP_EN
         if (!advState || wakeupflag)
 #endif
-            tmos_start_task(TouchKey_TaskID, DEALDATA_EVT, triggerTime);
+        tmos_start_task(TouchKey_TaskID, DEALDATA_EVT, triggerTime);
         return (events ^ DEALDATA_EVT);
     }
 
@@ -308,6 +318,13 @@ tmosEvents Touch_Key_ProcessEvent(tmosTaskID task_id, tmosEvents events)
         return (events ^ DEBUG_PRINT_EVENT);
     }
 #endif
+
+    if (events & TKY_RECALIBRATE_EVT)
+    {
+        touch_Recalibrate();
+        tmos_start_task(TouchKey_TaskID, TKY_RECALIBRATE_EVT,SLEEP_TRIGGER_TIME);
+        return (events ^ TKY_RECALIBRATE_EVT);
+    }
 
     if(events & TKY_KEEPALIVE_EVENT)
     {
@@ -345,6 +362,7 @@ void touch_on_TMOS_init(void)
     tmos_set_event(TouchKey_TaskID, DEBUG_PRINT_EVENT);
 #endif
     tmos_set_event(TouchKey_TaskID, WAKEUP_DATA_DEAL_EVT);
+    tmos_set_event(TouchKey_TaskID, TKY_RECALIBRATE_EVT);
     tmos_set_event(TouchKey_TaskID, TKY_KEEPALIVE_EVENT);
 
     TMR0_TimerInit(FREQ_SYS/1000);               //定时周期为1ms
@@ -449,6 +467,7 @@ static void peripherals_EnterSleep(void)
     /*You code here*/
     TKY_BacklightTaskStop();
     PFIC_DisableIRQ( TMR0_IRQn );
+    tmos_stop_task(TouchKey_TaskID, TKY_RECALIBRATE_EVT);
     tmos_stop_task(TouchKey_TaskID, TKY_KEEPALIVE_EVENT);
 }
 

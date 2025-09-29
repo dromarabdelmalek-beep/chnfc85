@@ -42,7 +42,7 @@ int main(void)
     uint8_t uid[7] = {0x00, 0xae, 0x38, 0xe2, 0xb5, 0x4c, 0x80};    /* 未知厂商 */
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_78MHz);
+    SetSysClock(SYSCLK_FREQ);
 
 #ifdef DEBUG
     GPIOA_SetBits(GPIO_Pin_14);

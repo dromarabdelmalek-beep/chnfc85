@@ -52,7 +52,7 @@ void DebugInit(void)
 int main()
 {
     uint8_t ret;
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
     PRINT( "CH372Device Running On USBHS Controller\n" );
     USBHS_Device_Init(ENABLE);

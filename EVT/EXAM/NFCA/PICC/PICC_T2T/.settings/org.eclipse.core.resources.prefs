@@ -15,4 +15,6 @@ encoding//NFCA_PICC_LIB/LIB_SRC/wch_nfca_picc.c=UTF-8
 encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.c=UTF-8
 encoding//NFCA_PICC_LIB/wch_nfca_picc_bsp.h=UTF-8
 encoding//NFCA_PICC_LIB/wch_nfca_picc_config.h=UTF-8
+encoding//PICC_COMMON/wch_nfca_picc_bsp.c=UTF-8
 encoding//T2T_COMMON/wch_nfca_picc_t2t.c=UTF-8
+encoding//src/main.c=UTF-8

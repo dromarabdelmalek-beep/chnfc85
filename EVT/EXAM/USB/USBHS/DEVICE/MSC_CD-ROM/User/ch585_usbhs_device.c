@@ -252,7 +252,7 @@ void USB2_DEVICE_IRQHandler( void )
     if( intflag & USBHS_UDIF_TRANSFER )
     {
         endp_num = intst & USBHS_UDIS_EP_ID_MASK;
-        if( !(R8_USB2_INT_ST & USBHS_UDIS_EP_DIR )) // SETUP/OUT Transaction
+        if( !(intst & USBHS_UDIS_EP_DIR )) // SETUP/OUT Transaction
         {
             switch( endp_num )
             {
@@ -772,7 +772,7 @@ void USB2_DEVICE_IRQHandler( void )
         }
     }
 
-    else if( R8_USB2_INT_FG & USBHS_UDIF_LINK_RDY )
+    else if( intflag & USBHS_UDIF_LINK_RDY )
     {
 
 #ifdef  SUPPORT_USB_HSI

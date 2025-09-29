@@ -76,7 +76,7 @@ void DebugInit(void)
 int main(void)
 {
     uint8_t ret;
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
 
     PRINT( "This is a APP code for a IAP application\n" );

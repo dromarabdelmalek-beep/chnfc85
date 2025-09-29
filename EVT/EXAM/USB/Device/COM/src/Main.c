@@ -1956,7 +1956,7 @@ void DebugInit( void )
 
 int main()
 {
-  SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+  SetSysClock(SYSCLK_FREQ);
 
   DebugInit();
   PRINT("start\n");

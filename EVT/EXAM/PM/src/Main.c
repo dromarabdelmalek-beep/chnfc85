@@ -51,7 +51,7 @@ void DebugInit(void)
 int main()
 {
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
     PWR_DCDCCfg(ENABLE);
     GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
     GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
@@ -178,7 +178,7 @@ void PM_LowPower_Sleep(void)
     sys_safe_access_disable();
     HSECFG_Current(HSE_RCur_100); // 降为额定电流(低功耗函数中提升了HSE偏置电流)
     //切换外部时钟
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
     SYS_RecoverIrq(irq_status);
 
 }

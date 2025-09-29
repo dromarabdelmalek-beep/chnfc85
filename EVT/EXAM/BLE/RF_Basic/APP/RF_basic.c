@@ -252,6 +252,7 @@ tmosEvents RFRole_ProcessEvent( tmosTaskID task_id, tmosEvents events )
     if( events & RF_START_RX_EVENT )
     {
         rf_rx_start( );
+        return events ^ RF_START_RX_EVENT;
     }
     if( events & RF_TEST_TX_EVENT )
     {

@@ -28,7 +28,7 @@ int main()
     uint8_t len;
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 
     /* 配置串口1：先配置IO口模式，再配置串口 */
     GPIOA_SetBits(GPIO_Pin_9);

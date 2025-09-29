@@ -28,7 +28,7 @@ int main()
     uint16_t  loc;
 
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
     DelayMs(5);
     /* ¿ªÆôµçÑ¹¼à¿Ø */
     PowerMonitor(ENABLE, HALevel_2V1);

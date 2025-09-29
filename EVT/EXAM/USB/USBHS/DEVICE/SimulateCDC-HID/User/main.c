@@ -48,7 +48,7 @@ void DebugInit(void)
  */
 int main(void)
 {
-    SetSysClock( CLK_SOURCE_HSE_PLL_62_4MHz );
+    SetSysClock(SYSCLK_FREQ);
     DebugInit();
     PRINT( "Simulate CDC-HID Device running on USBHS Controller\r\n" );
 

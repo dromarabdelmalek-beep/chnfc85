@@ -655,7 +655,7 @@ void DebugInit(void)
 int main()
 {
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
 
     DebugInit();
     PRINT("start\n");

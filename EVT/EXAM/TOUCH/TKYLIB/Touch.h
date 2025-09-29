@@ -4,6 +4,9 @@
 #include "CH58x_common.h"
 #include "TouchKey_CFG.h"
 #include "wchtouch.h"
+#ifdef TMOS_EN
+#include "CONFIG.h"
+#endif
 //是否开启触摸数据打印
 
 #ifdef  DEBUG
@@ -212,4 +215,5 @@ extern void touch_InfoDebug(void);
 extern uint16_t touch_GetLineSliderData(void);
 extern uint16_t touch_GetWheelSliderData(void);
 extern void touch_GPIOModeCfg (GPIOModeTypeDef mode, uint32_t channel);
+extern void touch_Recalibrate(void);
 #endif

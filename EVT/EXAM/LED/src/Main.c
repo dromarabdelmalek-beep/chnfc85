@@ -44,7 +44,7 @@ void DebugInit(void)
 int main()
 {
     HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(CLK_SOURCE_HSE_PLL_62_4MHz);
+    SetSysClock(SYSCLK_FREQ);
     /* ÅäÖÃ´®¿Úµ÷ÊÔ */
     DebugInit();
     PRINT( "Start @ChipID=%02X\n", R8_CHIP_ID );
