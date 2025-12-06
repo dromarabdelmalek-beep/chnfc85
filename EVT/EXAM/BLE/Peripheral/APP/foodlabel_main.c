@@ -1,35 +1,38 @@
 /********************************** (C) COPYRIGHT *******************************
- * File Name          : main.c
- * Author             : WCH
+ * File Name          : foodlabel_main.c
+ * Author             : Converted from ESP32-C3 to CH583
  * Version            : V1.1
- * Date               : 2020/08/06
- * Description        : 外设从机应用主函数及任务系统初始化
+ * Date               : 2025-12-06
+ * Description        : Smart Food Label - Advanced Cold Chain Monitoring
+ *                      CH583 + 2.9" E-Paper + SHT4x Sensor + BLE Broadcast
  *********************************************************************************
- * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
- * Attention: This software (modified or not) and binary are used for 
- * microcontroller manufactured by Nanjing Qinheng Microelectronics.
+ * Features:
+ * - Auto-calculate expiry dates
+ * - Low power sleep mode (wake every 10 min)
+ * - Cold chain temperature monitoring
+ * - Waste alert system
+ * - BLE broadcast of temperature and status
  *******************************************************************************/
 
-/******************************************************************************/
-/* 头文件包含 */
 #include "CONFIG.h"
 #include "HAL.h"
+#include "foodlabel.h"
 #include "gattprofile.h"
-#include "peripheral.h"
+#include "CH58x_common.h"
 
 /*********************************************************************
- * GLOBAL TYPEDEFS
+ * GLOBAL VARIABLES
  */
 __attribute__((aligned(4))) uint32_t MEM_BUF[BLE_MEMHEAP_SIZE / 4];
 
 #if(defined(BLE_MAC)) && (BLE_MAC == TRUE)
-const uint8_t MacAddr[6] = {0x84, 0xC2, 0xE4, 0x03, 0x02, 0x02};
+const uint8_t MacAddr[6] = {0x84, 0xC2, 0xE4, 0x03, 0xF0, 0x0D};  // Custom MAC for Food Label
 #endif
 
 /*********************************************************************
  * @fn      Main_Circulation
  *
- * @brief   主循环
+ * @brief   Main event loop
  *
  * @return  none
  */
@@ -46,7 +49,7 @@ void Main_Circulation()
 /*********************************************************************
  * @fn      main
  *
- * @brief   主函数
+ * @brief   Main entry point
  *
  * @return  none
  */
@@ -55,24 +58,42 @@ int main(void)
 #if(defined(DCDC_ENABLE)) && (DCDC_ENABLE == TRUE)
     PWR_DCDCCfg(ENABLE);
 #endif
-    HSECFG_Capacitance(HSECap_18p);
-    SetSysClock(SYSCLK_FREQ);
+
+    // Set system clock to 60MHz
+    SetSysClock(CLK_SOURCE_PLL_60MHz);
+
+    // Configure all GPIOs as input with pull-up for sleep mode
 #if(defined(HAL_SLEEP)) && (HAL_SLEEP == TRUE)
     GPIOA_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
     GPIOB_ModeCfg(GPIO_Pin_All, GPIO_ModeIN_PU);
 #endif
+
 #ifdef DEBUG
-    GPIOA_SetBits(GPIO_Pin_14);
-    GPIOPinRemap(ENABLE, RB_PIN_UART0);
-    GPIOA_ModeCfg(GPIO_Pin_14, GPIO_ModeOut_PP_5mA);
-    UART0_DefInit();
+    // Configure UART for debugging
+    GPIOA_SetBits(bTXD1);
+    GPIOA_ModeCfg(bTXD1, GPIO_ModeOut_PP_5mA);
+    UART1_DefInit();
 #endif
+
+    PRINT("\n=== SmartFood Cold Chain Monitor (CH583) ===\n");
     PRINT("%s\n", VER_LIB);
-    CH58x_BLEInit();
+
+    // Initialize BLE stack
+    CH58X_BLEInit();
+
+    // Initialize HAL (RTC, timers, etc.)
     HAL_Init();
+
+    // Initialize GAP Role as Peripheral
     GAPRole_PeripheralInit();
-    Peripheral_Init();
+
+    // Initialize Food Label application
+    FoodLabel_Init();
+
+    // Enter main event loop
     Main_Circulation();
+
+    return 0;
 }
 
 /******************************** endfile @ main ******************************/
