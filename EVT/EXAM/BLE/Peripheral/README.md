@@ -118,6 +118,57 @@ sudo hcidump --raw  # Look for 0xFF D7 07
 
 ---
 
+## 🚀 Getting Started - Repository Setup
+
+### Clone the Repository
+
+```bash
+# Clone the CH585 repository
+git clone https://github.com/dromarabdelmalek-beep/chnfc85.git
+cd chnfc85
+
+# View all branches
+git branch -a
+```
+
+### Checkout the FoodLabel Feature Branch
+
+The FoodLabel BLE application is developed on a feature branch:
+
+```bash
+# Checkout the feature branch
+git checkout claude/add-ble-broadcast-01MMQ1g7y7HE1cEQ7AbN1bFH
+
+# Verify you're on the correct branch
+git branch
+# Output: * claude/add-ble-broadcast-01MMQ1g7y7HE1cEQ7AbN1bFH
+
+# Navigate to the project directory
+cd EVT/EXAM/BLE/Peripheral
+```
+
+### Branch Information
+
+| Branch | Purpose | Status |
+|--------|---------|--------|
+| `main` | Original WCH SDK | Stable SDK |
+| `claude/add-ble-broadcast-01MMQ1g7y7HE1cEQ7AbN1bFH` | FoodLabel Application | ✅ Active Development |
+
+### Switch Between Branches
+
+```bash
+# Switch back to main SDK
+git checkout main
+
+# Return to FoodLabel development
+git checkout claude/add-ble-broadcast-01MMQ1g7y7HE1cEQ7AbN1bFH
+
+# View commit history
+git log --oneline --graph -10
+```
+
+---
+
 ## 🔨 Building the Project
 
 ### Quick Start (MounRiver Studio - Recommended)
@@ -180,15 +231,253 @@ CH585 Peripheral Pins:
 │  - SDA:  PB12                    │
 │  - Addr: 0x44 (7-bit)            │
 ├──────────────────────────────────┤
-│ User Buttons:                    │
-│  - Field Select: PA4             │
-│  - Value Up:     PA5             │
-│  - Value Down:   PA13            │
+│ User Buttons (Active High):      │
+│  - Field Select: PA0 (BTN1)      │
+│  - Value Up:     PA10 (BTN2)     │
+│  - Value Down:   PA5 (BTN3)      │
+│  - Config: Pull-down, rising edge│
+├──────────────────────────────────┤
+│ Status LEDs:                     │
+│  - Status LED:   PA8             │
+│  - Waste LED:    PA9             │
 ├──────────────────────────────────┤
 │ Debug UART:                      │
 │  - TX: PA9 (bTXD1) 115200 baud   │
 │  - RX: PA8 (bRXD1)               │
 └──────────────────────────────────┘
+```
+
+---
+
+## 🔘 Button User Interface Guide
+
+### Hardware Configuration
+
+The Smart Food Label features a **3-button navigation system** for configuring food type, creation date, and expiry settings.
+
+#### Button Hardware Specifications
+- **Technology**: GPIO interrupt-based with software debouncing
+- **Pull-down resistors**: Internal (buttons connect to 3.3V when pressed)
+- **Interrupt mode**: Rising edge detection
+- **Debounce time**: 300ms software filter
+- **Long-press threshold**: 5 seconds
+
+### Button Functions
+
+| Button | Pin | Short Press | Long Press (5s) | Location |
+|--------|-----|-------------|-----------------|----------|
+| **BTN1** - Field Select | PA0 | Cycle through editable fields | **Toggle Edit Mode** ON/OFF | Left |
+| **BTN2** - Value Up | PA10 | Increase current field value | N/A | Center |
+| **BTN3** - Value Down | PA5 | Decrease current field value | N/A | Right |
+
+### User Interaction Modes
+
+#### 1. View Mode (Default)
+- **Status**: Read-only display of current food label
+- **LED**: Status LED off
+- **Display**: Shows current temperature, humidity, food type, expiry date
+- **Actions**: No button actions except BTN1 long-press
+
+**To Enter Edit Mode**: Hold **BTN1** for 5 seconds
+- LED will blink **5 times rapidly** (100ms on/off)
+- Display updates to show editable fields
+
+#### 2. Edit Mode
+- **Status**: Allows modification of food label configuration
+- **LED**: Status LED blinks during mode transition
+- **Display**: Shows current field highlighted with cursor/indicator
+- **Actions**: All buttons active for navigation and editing
+
+**To Exit Edit Mode**: Hold **BTN1** for 5 seconds
+- Changes are automatically saved to flash
+- LED will blink **3 times slowly** (200ms on/off)
+- Display returns to view mode
+
+### Editable Fields (Edit Mode Only)
+
+Fields cycle in this order when pressing **BTN1** (short press):
+
+| Field # | Name | Range | BTN2 Effect | BTN3 Effect |
+|---------|------|-------|-------------|-------------|
+| **0** | Product Type | 0-7 (8 foods) | Next food → | ← Previous food |
+| **1** | Created Day | 1-31 | Day + 1 | Day - 1 |
+| **2** | Created Month | 1-12 | Month + 1 | Month - 1 |
+| **3** | Created Year | 25-30 (2025-2030) | Year + 1 | Year - 1 |
+| **4** | Days Left | 1-90 | Days + 1 | Days - 1 |
+
+**Note**: Expiry date is **automatically calculated** from Created Date + Days Left.
+
+### User Workflow Examples
+
+#### Example 1: Setting Up a New Milk Label
+
+```
+1. Power on device → View Mode (default display)
+
+2. Enter Edit Mode:
+   - Hold BTN1 for 5 seconds
+   - LED blinks 5 times
+   - Field 0 (Product) selected
+
+3. Select "Milk":
+   - Press BTN2 or BTN3 to scroll through foods
+   - Current selection shows on display
+   - Days Left auto-updates to 7 (milk shelf life)
+
+4. Set Created Date:
+   - Press BTN1 (short) → Field 1 (Created Day)
+   - Press BTN2/BTN3 to set day (e.g., 15)
+   - Press BTN1 → Field 2 (Created Month)
+   - Press BTN2/BTN3 to set month (e.g., 12)
+   - Press BTN1 → Field 3 (Created Year)
+   - Press BTN2/BTN3 to set year (e.g., 25 = 2025)
+
+5. Adjust Days Left (optional):
+   - Press BTN1 → Field 4 (Days Left)
+   - Press BTN2/BTN3 to adjust (default 7 for milk)
+   - Expiry date updates automatically on display
+
+6. Save and Exit:
+   - Hold BTN1 for 5 seconds
+   - LED blinks 3 times
+   - Settings saved to flash
+   - Display shows final label
+```
+
+#### Example 2: Quick Product Change
+
+```
+1. From View Mode, hold BTN1 for 5 seconds
+2. Field 0 (Product) is selected by default
+3. Press BTN2 twice to change Milk → Eggs → Chicken
+4. Hold BTN1 for 5 seconds to save
+5. Done! New product configured in <10 seconds
+```
+
+### Debouncing Implementation
+
+The button driver implements **software debouncing** to prevent false triggers:
+
+```c
+// Debouncing algorithm (from button_driver.c)
+#define BUTTON_DEBOUNCE_MS  300  // 300ms filter window
+
+if ((currentTime - lastButtonPressTime) < BUTTON_DEBOUNCE_MS) {
+    return;  // Ignore button press within 300ms of last press
+}
+```
+
+**Why 300ms?**
+- Typical mechanical switch bounce: 10-50ms
+- Human reaction time: 150-250ms
+- 300ms provides comfortable margin without feeling sluggish
+
+### Long-Press Detection
+
+Long-press is used to toggle edit mode (prevents accidental configuration changes):
+
+```c
+// Long-press detection (from button_driver.c)
+#define BUTTON_LONG_PRESS_MS  5000  // 5 seconds
+
+if (buttonPressed && (currentTime - buttonPressStartTime) >= 5000) {
+    toggleEditMode();  // Enter/exit configuration
+}
+```
+
+### LED Feedback System
+
+Visual confirmation for user actions:
+
+| Event | LED Pattern | Meaning |
+|-------|-------------|---------|
+| **Edit Mode ON** | 5 fast blinks (100ms) | Configuration unlocked |
+| **Edit Mode OFF** | 3 slow blinks (200ms) | Settings saved |
+| **Waste Alert** | Waste LED solid ON | Food expired or cold chain broken |
+
+### Interrupt-Based Architecture
+
+Buttons use **GPIO interrupts** for instant response and low power consumption:
+
+```c
+// Button initialization (from button_driver.c)
+GPIOA_ModeCfg(BTN_FIELD | BTN_VALUE_UP | BTN_VALUE_DOWN, GPIO_ModeIN_PD);
+GPIOA_ITModeCfg(BTN_FIELD, GPIO_ITMode_RiseEdge);
+GPIOA_ITModeCfg(BTN_VALUE_UP, GPIO_ITMode_RiseEdge);
+GPIOA_ITModeCfg(BTN_VALUE_DOWN, GPIO_ITMode_RiseEdge);
+PFIC_EnableIRQ(GPIO_A_IRQn);
+```
+
+**Advantages**:
+- ⚡ Instant response (<1ms from press to ISR)
+- 🔋 Low power (CPU sleeps until interrupt)
+- 🎯 No polling overhead
+
+### Button State Machine
+
+```
+┌─────────────┐
+│  View Mode  │ ◄────────────────────┐
+│  (Default)  │                      │
+└──────┬──────┘                      │
+       │                             │
+       │ BTN1 long-press (5s)        │
+       │ LED: 5 fast blinks          │
+       ▼                             │
+┌─────────────┐                      │
+│  Edit Mode  │                      │
+│  Field: 0   │                      │
+└──────┬──────┘                      │
+       │                             │
+       ├─ BTN1 short → Next Field    │
+       ├─ BTN2 → Value +1            │
+       ├─ BTN3 → Value -1            │
+       │                             │
+       │ BTN1 long-press (5s)        │
+       │ LED: 3 slow blinks          │
+       │ Save to flash               │
+       └─────────────────────────────┘
+```
+
+### Troubleshooting Button Issues
+
+**Buttons not responding**
+- ✅ Check power supply (3.3V stable)
+- ✅ Verify pin connections (PA0, PA10, PA5)
+- ✅ Test with multimeter (should read 0V idle, 3.3V pressed)
+- ✅ Check UART output for "Buttons Init" message
+
+**Edit mode won't activate**
+- ✅ Hold BTN1 for full 5 seconds (watch for LED blinks)
+- ✅ Check Status LED is functional
+- ✅ Try power cycle
+
+**Values changing erratically**
+- ✅ Likely contact bounce - check mechanical switch quality
+- ✅ Increase `BUTTON_DEBOUNCE_MS` from 300 to 500 in button_driver.h
+- ✅ Add external 100nF capacitor across button terminals
+
+**Button stuck in "pressed" state**
+- ✅ Check for short circuit on button line
+- ✅ Verify pull-down resistor is enabled
+- ✅ Test button with continuity mode (should be open when released)
+
+### Advanced: Custom Button Callbacks
+
+Developers can extend button functionality by modifying `Buttons_Handle()` in `button_driver.c`:
+
+```c
+// Example: Add custom action on specific product selection
+case 0: // Product field
+    state->currentFoodIndex = (state->currentFoodIndex + 1) % numFoods;
+
+    // Custom: Play beep sound when selecting "Fish"
+    if (state->currentFoodIndex == 3) {
+        TriggerBeep(200);  // Your custom function
+    }
+
+    PRINT("Product: %s\n", foodDatabase[state->currentFoodIndex].type);
+    break;
 ```
 
 ---
